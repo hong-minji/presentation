@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>비개발자가 에이전트를 더 잘 만들 수 있는 이유</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
+<style>
+@font-face{font-family:'Chilgok';src:url('font/Chilgok_Cye.woff2') format('woff2');font-weight:400;font-display:swap;}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;font-family:'Pretendard',sans-serif;overflow:hidden;background:#fff;color:#111;}
+
+.slide{
+  width:100vw;height:100vh;display:none;
+  flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;padding:60px 100px;position:relative;overflow:hidden;
+  background:#fff;
+}
+.slide.active{display:flex;animation:fadeIn .5s ease;}
+.slide.left{text-align:left;align-items:flex-start;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* Typography */
+.head{font-family:'Chilgok',sans-serif;font-size:56px;line-height:1.35;color:#111;letter-spacing:-.01em;}
+.head-lg{font-family:'Chilgok',sans-serif;font-size:72px;line-height:1.25;color:#111;}
+.sub{font-family:'Pretendard',sans-serif;font-size:22px;font-weight:400;line-height:1.7;color:#666;}
+.sub-lg{font-family:'Pretendard',sans-serif;font-size:28px;font-weight:400;line-height:1.6;color:#555;}
+.caption{font-family:'Pretendard',sans-serif;font-size:15px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#bbb;}
+.em{color:#111;font-weight:600;}
+.blue{color:#2563eb;}
+.warm{color:#dc2626;}
+.green{color:#16a34a;}
+
+/* Illustration */
+.illust{max-height:440px;object-fit:contain;margin:24px 0;}
+.illust-lg{max-height:420px;object-fit:contain;margin:20px 0;}
+.illust-sm{max-height:260px;object-fit:contain;margin:16px 0;}
+
+/* Layout helpers */
+.gap{height:20px;}.gap-lg{height:40px;}
+.row{display:flex;align-items:center;gap:48px;max-width:1100px;width:100%;}
+.row .col{flex:1;display:flex;flex-direction:column;}
+.col-center{align-items:center;text-align:center;}
+.col-left{align-items:flex-start;text-align:left;}
+
+/* Divider line */
+.line{width:60px;height:3px;background:#111;margin:16px 0;border-radius:2px;}
+
+/* Two column compare */
+.vs{display:flex;gap:32px;max-width:900px;}
+.vs .side{flex:1;text-align:center;padding:24px;}
+.vs .side-label{font-family:'Chilgok',sans-serif;font-size:32px;margin-bottom:12px;}
+.vs .side-text{font-size:20px;color:#888;line-height:1.6;}
+
+/* Interaction slides */
+.slide.interaction{
+  background:linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#4338ca 100%);
+  color:#fff;
+}
+.interaction .int-label{
+  font-family:'Pretendard',sans-serif;font-size:14px;font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5);
+  margin-bottom:8px;
+}
+.interaction .int-q{
+  font-family:'Chilgok',sans-serif;font-size:52px;line-height:1.4;color:#fff;
+}
+.interaction .int-options{
+  display:flex;gap:48px;margin-top:32px;justify-content:center;flex-wrap:wrap;
+}
+.interaction .int-opt{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.interaction .int-emoji{font-size:56px;}
+.interaction .int-opt-text{
+  font-family:'Pretendard',sans-serif;font-size:20px;font-weight:600;color:rgba(255,255,255,.85);
+}
+.interaction .int-cta{
+  font-family:'Pretendard',sans-serif;font-size:16px;color:rgba(255,255,255,.4);
+  margin-top:24px;letter-spacing:.05em;
+}
+
+/* Pen overlay for sync */
+.pen-overlay{position:fixed;inset:0;z-index:100;pointer-events:none;}
+
+/* Responsive */
+@media(max-width:1200px){
+  .head{font-size:44px;}
+  .head-lg{font-size:56px;}
+  .slide{padding:40px 48px;}
+  .illust{max-height:280px;}
+  .row{flex-direction:column;gap:24px;}
+}
+@media(max-width:768px){
+  .slide{padding:32px 24px;}
+  .head{font-size:28px;line-height:1.4;}
+  .head-lg{font-size:36px;line-height:1.3;}
+  .sub{font-size:16px;line-height:1.6;}
+  .sub-lg{font-size:20px;line-height:1.5;}
+  .caption{font-size:13px;}
+  .illust{max-height:180px;margin:16px 0;}
+  .illust-lg{max-height:180px;}
+  .illust-sm{max-height:140px;}
+  .vs{flex-direction:column;gap:16px;}
+  .vs .side-label{font-size:24px;}
+  .vs .side-text{font-size:16px;}
+  .interaction .int-q{font-size:32px;line-height:1.35;}
+  .interaction .int-options{gap:24px;margin-top:24px;}
+  .interaction .int-emoji{font-size:40px;}
+  .interaction .int-opt-text{font-size:16px;}
+  .interaction .int-cta{font-size:14px;margin-top:16px;}
+  .line{width:40px;height:2px;margin:12px 0;}
+  .gap{height:12px;}
+  .gap-lg{height:24px;}
+}
+@media(max-width:768px){
+  .summary-list{font-size:24px!important;line-height:1.6!important;}
+  .takeaway-list{font-size:20px!important;line-height:1.7!important;}
+  #slide15 .head,#slide17 .head,#slide19 .head,#slide22 .head,#slide24 .head{font-size:28px!important;}
+  #slide37 .head[style]{font-size:32px!important;}
+  #slide38 img{max-width:100%!important;max-height:100%!important;}
+}
+@media(max-width:480px){
+  .summary-list{font-size:20px!important;line-height:1.5!important;}
+  .takeaway-list{font-size:16px!important;line-height:1.6!important;}
+  #slide15 .head,#slide17 .head,#slide19 .head,#slide22 .head,#slide24 .head{font-size:22px!important;}
+  #slide37 .head[style]{font-size:26px!important;}
+  .slide{padding:24px 18px;}
+  .head{font-size:24px;}
+  .head-lg{font-size:30px;}
+  .sub{font-size:14px;}
+  .sub-lg{font-size:17px;}
+  .illust{max-height:140px;margin:12px 0;}
+  .interaction .int-q{font-size:26px;}
+  .interaction .int-emoji{font-size:32px;}
+  .interaction .int-opt-text{font-size:14px;}
+}
+</style>
+</head>
+<body>
+
+<!-- 1. 타이틀 -->
+<div class="slide active" id="slide1">
+  <p class="caption">Build with AI</p>
+  <div class="gap"></div>
+  <h1 class="head-lg">비개발자가 에이전트를<br>더 잘 만들 수 있는 이유</h1>
+  <img src="img/01-cover.gif" class="illust" alt=""/>
+  <p class="sub">홍민지 · 모두의연구소 AX팀</p>
+</div>
+
+<!-- INT 1. 개발자 vs 비개발자 -->
+<div class="slide interaction" id="slide2">
+  <p class="int-label">LIVE POLL</p>
+  <div class="gap"></div>
+  <h2 class="int-q">비개발자가 에이전트를<br>더 잘 만들 수 있다?</h2>
+  <div class="int-options">
+    <div class="int-opt"><span class="int-emoji">❤️</span><span class="int-opt-text">개발자가 잘 만든다</span></div>
+    <div class="int-opt"><span class="int-emoji">🔥</span><span class="int-opt-text">비개발자가 잘 만든다</span></div>
+  </div>
+  <p class="int-cta">핸드폰으로 반응해주세요!</p>
+</div>
+
+<!-- 3. 커리어 경로 -->
+<div class="slide" id="slide3">
+  <h2 class="head">순수미술 → 전시디자인 → 편집디자인<br>→ 그로스마케터 → <span class="blue">AX</span></h2>
+  <img src="img/02-journey.gif" class="illust" alt=""/>
+  <p class="sub">시각적 사고, 창의적 사고, 기획적 사고<br>지나온 모든 날들이 <span class="em">에이전트의 밑거름</span></p>
+</div>
+
+<!-- 4. 모순 -->
+<div class="slide" id="slide4">
+  <h2 class="head">코드 한 줄도 못 씁니다.<br>프로그래밍 배운 적 없어요.</h2>
+  <img src="img/03-paradox.gif" class="illust" alt=""/>
+  <p class="sub">그런데 지금 에이전트를 만들고 있고,<br><span class="em">성과를 내고 있습니다.</span></p>
+</div>
+
+<!-- 5. 질문 -->
+<div class="slide" id="slide5">
+  <h2 class="head-lg">왜?</h2>
+  <div class="gap-lg"></div>
+  <p class="sub-lg">코드를 못 쓰는 내가<br>에이전트를 잘 만들 수 있었을까?</p>
+</div>
+
+<!-- INT 2. 에이전트 만들어보셨나요 -->
+<div class="slide interaction" id="slide6">
+  <p class="int-label">LIVE POLL</p>
+  <div class="gap"></div>
+  <h2 class="int-q">에이전트<br>만들어보신 분?</h2>
+  <div class="int-options">
+    <div class="int-opt"><span class="int-emoji">🔥</span><span class="int-opt-text">만들어봤다!</span></div>
+  </div>
+  <p class="int-cta">핸드폰으로 반응해주세요!</p>
+</div>
+
+<!-- 7. Part 1 섹션 -->
+<div class="slide" id="slide7">
+  <p class="caption" style="color:#dc2626;">PART 1</p>
+  <div class="gap"></div>
+  <h2 class="head">먼저,<br>왜 실패하는지를 봅시다.</h2>
+</div>
+
+<!-- 8. 함정 1 -->
+<div class="slide" id="slide8">
+  <h2 class="head"><span class="warm">일을 싫어해서</span><br>에이전트를 만든다.</h2>
+  <img src="img/06-trap1.gif" class="illust" alt=""/>
+  <p class="sub">일을 안 하려고 만드는 사람이<br>결국 가장 많은 시간을 낭비한다.</p>
+</div>
+
+<!-- 9. 함정 2 -->
+<div class="slide" id="slide9">
+  <h2 class="head"><span class="warm">AI한테 다 시키고 싶은</span><br>욕심.</h2>
+  <img src="img/07-trap2.gif" class="illust" alt=""/>
+  <p class="sub">복잡해지고, 느려지고, 품질이 떨어진다.</p>
+</div>
+
+<!-- 10. 함정 3 -->
+<div class="slide" id="slide10">
+  <h2 class="head"><span class="warm">도구부터</span><br>시작한다.</h2>
+  <img src="img/08-trap3.gif" class="illust" alt=""/>
+  <p class="sub">"이 도구로 뭘 할 수 있을까?"<br>문제가 아니라 도구가 출발점이 되면, 쓸모없는 에이전트가 만들어진다.</p>
+</div>
+
+<!-- 11. 함정 요약 -->
+<div class="slide" id="slide11">
+  <h2 class="head">회피 + 욕심 + 도구 집착<br>= <span class="warm">실패</span></h2>
+</div>
+
+<!-- INT 3. 설계 vs 일단 만들기 -->
+<div class="slide interaction" id="slide12">
+  <p class="int-label">LIVE POLL</p>
+  <div class="gap"></div>
+  <h2 class="int-q">바이브코딩 할 때<br>뭐부터?</h2>
+  <div class="int-options">
+    <div class="int-opt"><span class="int-emoji">👏</span><span class="int-opt-text">설계부터 하고 만든다</span></div>
+    <div class="int-opt"><span class="int-emoji">🔥</span><span class="int-opt-text">일단 만들면서 생각한다</span></div>
+  </div>
+  <p class="int-cta">핸드폰으로 반응해주세요!</p>
+</div>
+
+<!-- 13. Part 2 섹션 -->
+<div class="slide" id="slide13">
+  <p class="caption" style="color:#2563eb;">PART 2</p>
+  <div class="gap"></div>
+  <h2 class="head">에이전트를 잘 만드는<br><span class="blue">5가지 비결</span></h2>
+</div>
+
+<!-- 14. 비결 1 타이틀 -->
+<div class="slide" id="slide14">
+  <p class="caption" style="color:#2563eb;">비결 1</p>
+  <div class="gap"></div>
+  <h2 class="head">문제와 목적으로부터<br><span class="blue">시작한다.</span></h2>
+  <img src="img/11-problem.jpg" class="illust" alt=""/>
+</div>
+
+<!-- 15. 비결 1 설명 -->
+<div class="slide" id="slide15">
+  <p class="caption" style="color:#2563eb;">비결 1</p>
+  <div class="gap"></div>
+  <h2 class="head" style="font-size:44px;">기술이 아니라<br><span class="blue">문제와 목적</span>에서 출발.</h2>
+  <div class="gap"></div>
+  <p class="sub-lg">"이게 불편해" "이걸 해결하고 싶어"<br>그게 에이전트의 출발점.</p>
+  <div class="gap"></div>
+ 
+</div>
+
+<!-- 16. 비결 2 타이틀 -->
+<div class="slide" id="slide16">
+  <p class="caption" style="color:#2563eb;">비결 2</p>
+  <div class="gap"></div>
+  <h2 class="head">사람이 할 것과 AI가 할 것을<br><span class="blue">구분할 줄 안다.</span></h2>
+  <img src="img/13-balance.gif" class="illust" alt=""/>
+</div>
+
+<!-- 17. 비결 2 설명 -->
+<div class="slide" id="slide17">
+  <p class="caption" style="color:#2563eb;">비결 2</p>
+  <div class="gap"></div>
+  <h2 class="head" style="font-size:44px;"><span class="blue">절제력</span>이 핵심.</h2>
+  <div class="gap"></div>
+  <p class="sub-lg">AI한테 다 맡기고 싶은<br><span class="em">욕심을 참는 것.</span></p>
+  <div class="gap"></div>
+  <p class="sub">못 참으면 복잡해지고, 느려지고, 품질이 떨어진다.</p>
+</div>
+
+<!-- 18. 비결 3 타이틀 -->
+<div class="slide" id="slide18">
+  <p class="caption" style="color:#2563eb;">비결 3</p>
+  <div class="gap"></div>
+  <h2 class="head">결과물의<br><span class="blue">품질 기준</span>이 있다.</h2>
+  <img src="img/15-quality.jpg" class="illust" alt=""/>
+</div>
+
+<!-- 19. 비결 3 설명 -->
+<div class="slide" id="slide19">
+  <p class="caption" style="color:#2563eb;">비결 3</p>
+  <div class="gap"></div>
+  <h2 class="head" style="font-size:44px;">"이거 실제로 <span class="blue">올릴 수 있는</span> 수준이야?"</h2>
+  <div class="gap"></div>
+  <p class="sub-lg">품질 기준을 아는 사람만<br>에이전트의 아웃풋을 판단할 수 있다.</p>
+  <div class="gap"></div>
+  <p class="sub">에이전트는 <span class="em">결과물 기준으로 개선</span>한다.<br>기준이 없으면 개선도 없다.</p>
+</div>
+
+<!-- INT 4. 70% vs 90% -->
+<div class="slide interaction" id="slide20">
+  <p class="int-label">LIVE POLL</p>
+  <div class="gap"></div>
+  <h2 class="int-q">AI가 만든 결과물,<br>어디까지 OK?</h2>
+  <div class="int-options">
+    <div class="int-opt"><span class="int-emoji">😂</span><span class="int-opt-text">70%면 충분, 나머지는 내가</span></div>
+    <div class="int-opt"><span class="int-emoji">😮</span><span class="int-opt-text">90% 이상 아니면 다시 시킨다</span></div>
+  </div>
+  <p class="int-cta">핸드폰으로 반응해주세요!</p>
+</div>
+
+<!-- 21. 비결 4 타이틀 -->
+<div class="slide" id="slide21">
+  <p class="caption" style="color:#2563eb;">비결 4</p>
+  <div class="gap"></div>
+  <h2 class="head">안 되면<br><span class="blue">돌아갈 줄 안다.</span></h2>
+  <img src="img/17-detour.gif" class="illust" alt=""/>
+</div>
+
+<!-- 22. 비결 4 설명 -->
+<div class="slide" id="slide22">
+  <p class="caption" style="color:#2563eb;">비결 4</p>
+  <div class="gap"></div>
+  <h2 class="head" style="font-size:44px;">코딩보다 중요한 건<br><span class="blue">만들어내는 능력</span>.</h2>
+  <div class="gap"></div>
+  <p class="sub-lg">막히면 돌아가고, 안 되면 다른 방식을 시도하고,<br>한계가 있으면 다른 조합으로 우회한다.</p>
+  <div class="gap"></div>
+  <p class="sub">포기하지 않고 어떻게든 길을 찾는 것.</p>
+</div>
+
+<!-- 23. 비결 5 타이틀 -->
+<div class="slide" id="slide23">
+  <p class="caption" style="color:#2563eb;">비결 5</p>
+  <div class="gap"></div>
+  <h2 class="head">"해보고 싶다"로<br><span class="blue">시작한다.</span></h2>
+  <img src="img/19-passion.gif" class="illust" alt=""/>
+</div>
+
+<!-- 24. 비결 5 설명 -->
+<div class="slide" id="slide24">
+  <p class="caption" style="color:#2563eb;">비결 5</p>
+  <div class="gap"></div>
+  <h2 class="head" style="font-size:44px;">"해야 해" → 멈춤.<br>"<span class="blue">해보고 싶다</span>" → 끝까지.</h2>
+  <div class="gap"></div>
+  <p class="sub-lg">스킬은 배울 수 있고, 프레임워크는 익힐 수 있다.<br>하지만 <span class="em">"해보고 싶다"는 마음은 가르칠 수 없다.</span></p>
+</div>
+
+<!-- 25. 비결 요약 -->
+<div class="slide" id="slide25">
+  <h2 class="head summary-list" style="line-height:1.8;font-size:40px;">
+    <span class="blue">1.</span> 문제와 목적에서 시작한다<br>
+    <span class="blue">2.</span> 사람/AI를 구분할 줄 안다<br>
+    <span class="blue">3.</span> 품질 기준이 있다<br>
+    <span class="blue">4.</span> 안 되면 돌아간다<br>
+    <span class="blue">5.</span> 해보고 싶어서 시작한다
+  </h2>
+</div>
+
+<!-- INT 5. 돌아간다 vs 판다 -->
+<div class="slide interaction" id="slide26">
+  <p class="int-label">LIVE POLL</p>
+  <div class="gap"></div>
+  <h2 class="int-q">막혔을 때<br>나는</h2>
+  <div class="int-options">
+    <div class="int-opt"><span class="int-emoji">🔥</span><span class="int-opt-text">방법을 바꿔서 돌아간다</span></div>
+    <div class="int-opt"><span class="int-emoji">❤️</span><span class="int-opt-text">될 때까지 판다</span></div>
+  </div>
+  <p class="int-cta">핸드폰으로 반응해주세요!</p>
+</div>
+
+<!-- 27. Part 3 섹션 -->
+<div class="slide" id="slide27">
+  <p class="caption" style="color:#16a34a;">PART 3</p>
+  <div class="gap"></div>
+  <h2 class="head">에이전트를 만드는 건<br><span class="green">일을 쪼개는 것</span>에서 시작한다</h2>
+</div>
+
+<!-- 28. Step 1 -->
+<div class="slide" id="slide28">
+  <h2 class="head"><span class="green">Step 1</span><br>일을 나열한다.</h2>
+  <img src="img/23-postitwall.gif" class="illust" alt=""/>
+  <p class="sub">이벤트스토밍처럼<br>포스트잇에 하나씩 적어서 벽에 붙여본다.</p>
+  <p style="font-size:13px;color:#aaa;margin-top:12px;">추천 도구: tldraw.com</p>
+</div>
+
+<!-- 29. Step 2 -->
+<div class="slide" id="slide29">
+  <h2 class="head"><span class="green">Step 2</span><br>Input → Process → Output으로 쪼갠다.</h2>
+  <img src="img/24-ipo.gif" class="illust" alt=""/>
+  <p class="sub">뭐가 들어오고, 어떤 처리를 거치고, 뭐가 나가는지.</p>
+</div>
+
+<!-- 30. Step 3 -->
+<div class="slide" id="slide30">
+  <h2 class="head"><span class="green">Step 3</span><br>어려우면 <span class="green">Output부터 역산</span>한다.</h2>
+  <div class="gap-lg"></div>
+  <p class="sub-lg">"이게 나오려면 어떻게 해야 하지?"<br>거슬러 생각하고, AI에게 의논한다.</p>
+</div>
+
+<!-- 31. Step 4 -->
+<div class="slide" id="slide31">
+  <h2 class="head"><span class="green">Step 4</span><br>Process가 3개 이상이면<br>에이전트를 만들 가치가 있다.</h2>
+  <div class="gap-lg"></div>
+  <p class="sub">3단계 이상의 반복 처리<br>= 사람이 매번 하기엔 비효율적</p>
+</div>
+
+<!-- 32. Step 5 -->
+<div class="slide" id="slide32">
+  <h2 class="head"><span class="green">Step 5</span><br>70%로 시작한다.</h2>
+  <img src="img/27-iterate.jpg" class="illust" alt=""/>
+  <p class="sub">완벽하게 만들지 않는다.<br>쓰면서 고치는 게 가장 빠른 개선 루프.</p>
+</div>
+
+<!-- INT 6. 귀찮은 것 vs 중요한 것 -->
+<div class="slide interaction" id="slide33">
+  <p class="int-label">LIVE POLL</p>
+  <div class="gap"></div>
+  <h2 class="int-q">자동화,<br>뭐부터?</h2>
+  <div class="int-options">
+    <div class="int-opt"><span class="int-emoji">😂</span><span class="int-opt-text">제일 귀찮은 것부터</span></div>
+    <div class="int-opt"><span class="int-emoji">👏</span><span class="int-opt-text">제일 중요한 것부터</span></div>
+  </div>
+  <p class="int-cta">핸드폰으로 반응해주세요!</p>
+</div>
+
+<!-- 34. 핵심 전환 -->
+<div class="slide" id="slide34">
+  <h2 class="head">에이전트를 잘 만드는 건<br>코딩 실력이 아니라<br><span class="blue">일을 아는 깊이</span>입니다.</h2>
+</div>
+
+<!-- 35. 핵심 메시지 -->
+<div class="slide" id="slide35">
+  <h2 class="head-lg"><span class="blue">하고 싶어야 한다.</span></h2>
+  <div class="gap-lg"></div>
+  <p class="sub-lg">하고 싶은 사람이 끝까지 가고,<br>끝까지 간 사람이 좋은 에이전트를 만든다.</p>
+</div>
+
+<!-- 36. Take Away -->
+<div class="slide" id="slide36">
+  <p class="caption" style="color:#2563eb;">TAKE AWAY</p>
+  <div class="gap"></div>
+  <h2 class="head takeaway-list" style="line-height:1.9;font-size:36px;">
+    <span class="warm">함정</span> — 회피, 욕심, 도구 집착을 버려라<br>
+    <span class="blue">비결 1</span> — 문제와 목적에서 시작하라<br>
+    <span class="blue">비결 2</span> — 사람/AI 역할을 구분할 줄 알아라<br>
+    <span class="blue">비결 3</span> — 품질 기준을 가져라<br>
+    <span class="blue">비결 4</span> — 안 되면 돌아가라<br>
+    <span class="blue">비결 5</span> — 하고 싶어야 한다<br>
+    <span class="green">실전</span> — 일 나열 → I/P/O 쪼개기 → 70%로 시작
+  </h2>
+</div>
+
+<!-- 37. 마무리 -->
+<div class="slide" id="slide37">
+  <h2 class="head">에이전트를 만들고 있습니다.</h2>
+  <div class="gap"></div>
+  <p class="sub-lg"><span class="em">여러분도 됩니다.</span></p>
+  <div class="gap"></div>
+  <p class="head" style="font-size:48px;">감사합니다.</p>
+</div>
+
+<!-- 38. 연락처 -->
+<div class="slide" id="slide38" style="background:#000;padding:0;">
+  <img src="img/38-contact.jpg" style="max-width:80%;max-height:80%;object-fit:contain;" alt=""/>
+</div>
+
+<canvas id="pen-overlay" class="pen-overlay"></canvas>
+
+<script>
+(function(){
+  var total=38,cur=1,bc=null;
+  var pen=document.getElementById('pen-overlay');
+  var ctx=pen.getContext('2d');
+  function initPen(){pen.width=innerWidth;pen.height=innerHeight;ctx.strokeStyle='#dc2626';ctx.lineWidth=4;ctx.lineCap='round';ctx.lineJoin='round';}
+  initPen();addEventListener('resize',initPen);
+
+  if('BroadcastChannel' in window){
+    bc=new BroadcastChannel('presentation-sync');
+    bc.onmessage=function(e){var d=e.data||{};
+      if(d.type==='slideChange'&&d.slide!==cur)goTo(d.slide,true,false);
+      if(d.type==='penStart'){ctx.beginPath();ctx.moveTo(d.x/1920*pen.width,d.y/1080*pen.height);}
+      if(d.type==='penMove'){ctx.lineTo(d.x/1920*pen.width,d.y/1080*pen.height);ctx.stroke();}
+      if(d.type==='penClear')ctx.clearRect(0,0,pen.width,pen.height);
+    };
+  }
+
+  function goTo(n,hash,broadcast){
+    if(broadcast===undefined)broadcast=true;
+    var t=Math.min(total,Math.max(1,n));
+    var o=document.getElementById('slide'+cur),nx=document.getElementById('slide'+t);
+    if(!nx)return;if(o)o.classList.remove('active');nx.classList.add('active');cur=t;
+    ctx.clearRect(0,0,pen.width,pen.height);
+    if(hash)history.replaceState(null,'','#'+cur);
+    if(broadcast&&bc)bc.postMessage({type:'slideChange',slide:cur});
+  }
+
+  addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='Enter'){e.preventDefault();goTo(cur+1,true);}
+    else if(e.key==='ArrowLeft'){e.preventDefault();goTo(cur-1,true);}
+    else if(e.key==='f'||e.key==='F'){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+  });
+  addEventListener('message',function(e){var d=e.data||{};if(d.type==='slideChange'&&d.slide!==cur)goTo(d.slide,true,false);});
+  addEventListener('hashchange',function(){var h=parseInt(location.hash.replace('#',''),10);if(h&&h!==cur)goTo(h,false,false);});
+  var tx=0;
+  addEventListener('touchstart',function(e){tx=e.changedTouches[0].screenX;});
+  addEventListener('touchend',function(e){var d=e.changedTouches[0].screenX-tx;if(d<-50)goTo(cur+1,true);if(d>50)goTo(cur-1,true);});
+  var h=parseInt(location.hash.replace('#',''),10);goTo(h||1,true,false);
+})();
+</script>
+</body>
+</html>
